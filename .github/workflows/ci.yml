@@ -41,6 +41,7 @@ jobs:
         env:
           TMDB_V3_API_KEY: ${{ secrets.TMDB_V3_API_KEY }}
         run: |
+          cd DevSecOps-Project/
           docker build -t netflix .
           docker run -d --name netflix -p 8081:80 netflix:latest
           sudo docker ps -a
