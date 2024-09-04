@@ -1,0 +1,41 @@
+name: DevSecOps Project
+
+on:
+ push:
+   branches:
+     - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: main
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.x'
+
+      - name: Installing Docker 
+        run: |
+          sudo apt-get update
+          sudo apt-get install docker.io -y
+          sudo usermod -aG docker $USER  # Replace with your system's username, e.g., 'ubuntu'
+          newgrp docker
+          sudo chmod 777 /var/run/docker.sock   
+
+      - name: Set up .env file
+        env:
+          TMDB_V3_API_KEY: ${{ secrets.TMDB_V3_API_KEY }}
+        run: |
+          echo "TMDB_V3_API_KEY=${{ secrets.TMDB_V3_API_KEY }}" >> .env.${{ secrets.ENV }} 
+
+      - name: Running application on Docker
+        env:
+          TMDB_V3_API_KEY: ${{ secrets.TMDB_V3_API_KEY }}
+        run: |
+          docker build -t netflix .
+          docker run -d --name netflix -p 8081:80 netflix:latest              
