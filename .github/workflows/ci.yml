@@ -7,9 +7,7 @@ on:
 
 jobs:
   deploy:
-    # Use self-hosted runner instead of ubuntu-latest
-    runs-on: self-hosted
-    timeout-minutes: 60
+    runs-on: ubuntu-latest
     environment:
       name: main
     steps:
@@ -41,7 +39,16 @@ jobs:
         env:
           TMDB_V3_API_KEY: ${{ secrets.TMDB_V3_API_KEY }}
         run: |
-          cd DevSecOps-Project/
           docker build -t netflix .
-          docker run -d --name netflix -p 8081:80 netflix:latest
-          sudo docker ps -a
+
+      - name: Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Tag Docker image
+        run: |
+          docker tag netflix:latest ${{ secrets.DOCKERHUB_USERNAME }}/netflix:latest
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/netflix:latest    
