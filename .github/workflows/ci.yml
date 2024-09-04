@@ -1,9 +1,9 @@
 name: DevSecOps Project
 
 on:
- push:
-   branches:
-     - main
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -19,21 +19,25 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Installing Docker 
+      - name: Remove existing containerd package
         run: |
-          sudo apt-get update
-          sudo apt-get install docker.io -y
-          sudo chmod 777 /var/run/docker.sock   
+          sudo apt-get remove -y containerd
+
+      - name: Installing Docker
+        run: |
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh get-docker.sh
+          sudo chmod 777 /var/run/docker.sock
 
       - name: Set up .env file
         env:
           TMDB_V3_API_KEY: ${{ secrets.TMDB_V3_API_KEY }}
         run: |
-          echo "TMDB_V3_API_KEY=${{ secrets.TMDB_V3_API_KEY }}" >> .env.${{ secrets.ENV }} 
+          echo "TMDB_V3_API_KEY=${{ secrets.TMDB_V3_API_KEY }}" >> .env.${{ secrets.ENV }}
 
       - name: Running application on Docker
         env:
           TMDB_V3_API_KEY: ${{ secrets.TMDB_V3_API_KEY }}
         run: |
           docker build -t netflix .
-          docker run -d --name netflix -p 8081:80 netflix:latest              
+          docker run -d --name netflix -p 8081:80 netflix:latest
