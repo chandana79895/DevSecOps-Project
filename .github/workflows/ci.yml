@@ -9,6 +9,7 @@ jobs:
   deploy:
     # Use self-hosted runner instead of ubuntu-latest
     runs-on: self-hosted
+    timeout-minutes: 60
     environment:
       name: main
     steps:
